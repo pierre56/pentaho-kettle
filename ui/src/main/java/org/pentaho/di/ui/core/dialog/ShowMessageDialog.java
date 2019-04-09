@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2018 by Hitachi Vantara : http://www.pentaho.com
+ * Copyright (C) 2002-2019 by Hitachi Vantara : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -35,6 +35,8 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
@@ -65,6 +67,8 @@ public class ShowMessageDialog extends Dialog {
     buttonTextByFlagDefaults.put( SWT.CANCEL, BaseMessages.getString( PKG, "System.Button.Cancel" ) );
     buttonTextByFlagDefaults.put( SWT.YES, BaseMessages.getString( PKG, "System.Button.Yes" ) );
     buttonTextByFlagDefaults.put( SWT.NO, BaseMessages.getString( PKG, "System.Button.No" ) );
+    buttonTextByFlagDefaults.put( SWT.IGNORE, BaseMessages.getString( PKG, "System.Button.Continue" ) );
+    buttonTextByFlagDefaults.put( SWT.SAVE, BaseMessages.getString( PKG, "System.Button.SaveAs" ) );
   }
 
   private String title, message;
@@ -82,6 +86,7 @@ public class ShowMessageDialog extends Dialog {
 
   private boolean scroll;
   private boolean hasIcon;
+  private boolean isCentered;
 
   /** Timeout of dialog in seconds */
   private int timeOut;
@@ -248,7 +253,6 @@ public class ShowMessageDialog extends Dialog {
         buttons.add( button );
       }
     }
-
     setLayoutAccordingToType();
 
     // Detect [X] or ALT-F4 or something that kills this window...
@@ -268,6 +272,9 @@ public class ShowMessageDialog extends Dialog {
     final String ok = button.getText();
     long startTime = new Date().getTime();
 
+    if ( isCentered ) {
+      setPositionCenter();
+    }
     shell.open();
     while ( !shell.isDisposed() ) {
       if ( !display.readAndDispatch() ) {
@@ -318,6 +325,13 @@ public class ShowMessageDialog extends Dialog {
         BaseStepDialog.positionBottomButtons( shell, buttons.toArray( new Button[buttons.size()] ), 0,
           BaseStepDialog.BUTTON_ALIGNMENT_RIGHT, wlDesc );
         break;
+      case Const.SHOW_FATAL_ERROR:
+        formLayout.marginWidth = 15;
+        formLayout.marginHeight = 15;
+        setFdlDesc( margin * 3, 0, 0, margin );
+        BaseStepDialog.positionBottomButtons( shell, buttons.toArray( new Button[buttons.size()] ), Const.FORM_MARGIN,
+          BaseStepDialog.BUTTON_ALIGNMENT_RIGHT, wlDesc );
+        break;
       default:
         formLayout.marginWidth = Const.FORM_MARGIN;
         formLayout.marginHeight = Const.FORM_MARGIN;
@@ -337,6 +351,14 @@ public class ShowMessageDialog extends Dialog {
     }
   }
 
+  // If we want to center dialog on parent
+  private void setPositionCenter() {
+    Rectangle shellBounds = getParent().getBounds();
+    Point dialogSize = shell.getSize();
+    shell.setLocation( shellBounds.x + ( shellBounds.width - dialogSize.x ) / 2, shellBounds.y
+      + ( shellBounds.height - dialogSize.y ) / 2 );
+  }
+
   /**
    * @return the timeOut
    */
@@ -354,5 +376,13 @@ public class ShowMessageDialog extends Dialog {
 
   public void setType( int type ) {
     this.type = type;
+  }
+
+  public boolean isCentered() {
+    return isCentered;
+  }
+
+  public void setCentered( boolean centered ) {
+    isCentered = centered;
   }
 }

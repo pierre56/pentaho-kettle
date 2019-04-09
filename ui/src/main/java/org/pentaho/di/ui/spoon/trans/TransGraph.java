@@ -3,7 +3,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2018 by Hitachi Vantara : http://www.pentaho.com
+ * Copyright (C) 2002-2019 by Hitachi Vantara : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -2061,12 +2061,6 @@ public class TransGraph extends AbstractGraph implements XulEventHandler, Redraw
   @Override
   public void keyReleased( KeyEvent e ) {
   }
-
-  @Override
-  public boolean setFocus() {
-    return ( canvas != null ) ? canvas.setFocus() : false;
-  }
-
   public void renameStep( StepMeta stepMeta, String stepname ) {
     String newname = stepname;
 

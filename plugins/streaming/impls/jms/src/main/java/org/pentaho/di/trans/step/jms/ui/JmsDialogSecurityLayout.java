@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2018 by Hitachi Vantara : http://www.pentaho.com
+ * Copyright (C) 2018-2019 by Hitachi Vantara : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -30,6 +30,7 @@ import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.jms.JmsDelegate;
@@ -59,27 +60,27 @@ class JmsDialogSecurityLayout {
   private Map<String, String> sslConfig;
   private final JmsDelegate jmsDelegate;
 
-  private final String SSL_TRUST_STORE_TYPE;
-  private final String SSL_TRUST_STORE_PATH;
-  private final String SSL_TRUST_STORE_PASSWORD;
-  private final String SSL_KEY_STORE_TYPE;
-  private final String SSL_KEY_STORE_PATH;
-  private final String SSL_KEY_STORE_PASS;
-  private final String SSL_CONTEXT_ALGORITHM;
-  private final String SSL_CIPHER_SUITE;
-  private final String SSL_IBM_FIPS_REQUIRED;
-  private final String SSL_AMQ_PROVIDER;
-  private final String SSL_AMQ_TRUST_ALL;
-  private final String SSL_AMQ_VERIFY_HOST;
+  private static final String SSL_TRUST_STORE_TYPE = getString( PKG, "JmsDialog.Security.SSL_TRUST_STORE_TYPE" );
+  private static final String SSL_TRUST_STORE_PATH = getString( PKG, "JmsDialog.Security.SSL_TRUST_STORE_PATH" );
+  private static final String SSL_TRUST_STORE_PASSWORD =
+    getString( PKG, "JmsDialog.Security.SSL_TRUST_STORE_PASSWORD" );
+  private static final String SSL_KEY_STORE_TYPE = getString( PKG, "JmsDialog.Security.SSL_KEY_STORE_TYPE" );
+  private static final String SSL_KEY_STORE_PATH = getString( PKG, "JmsDialog.Security.SSL_KEY_STORE_PATH" );
+  private static final String SSL_KEY_STORE_PASS = getString( PKG, "JmsDialog.Security.SSL_KEY_STORE_PASS" );
+  private static final String SSL_CONTEXT_ALGORITHM = getString( PKG, "JmsDialog.Security.SSL_CONTEXT_ALGORITHM" );
+  private static final String SSL_CIPHER_SUITE = getString( PKG, "JmsDialog.Security.SSL_CIPHER_SUITE" );
+  private static final String SSL_IBM_FIPS_REQUIRED = getString( PKG, "JmsDialog.Security.SSL_IBM_FIPS_REQUIRED" );
+  private static final String SSL_AMQ_PROVIDER = getString( PKG, "JmsDialog.Security.SSL_AMQ_PROVIDER" );
+  private static final String SSL_AMQ_TRUST_ALL = getString( PKG, "JmsDialog.Security.SSL_AMQ_TRUST_ALL" );
+  private static final String SSL_AMQ_VERIFY_HOST = getString( PKG, "JmsDialog.Security.SSL_AMQ_VERIFY_HOST" );
 
   private CheckBoxTableComboDefaultButton checkBoxTableCombo;
   private AuthComposite activeMqAuthComposite;
   private AuthComposite ibmMqAuthComposite;
-  private Composite wSslGroup;
 
   JmsDialogSecurityLayout(
     PropsUI props, CTabFolder wTabFolder, ModifyListener lsMod, TransMeta transMeta,
-    boolean sslEnabled, JmsDelegate jmsDelegate ) {
+    boolean sslEnabled, JmsDelegate jmsDelegate, Shell shell ) {
     checkNotNull( props );
     checkNotNull( wTabFolder );
     checkNotNull( lsMod );
@@ -92,22 +93,9 @@ class JmsDialogSecurityLayout {
     this.jmsDelegate = jmsDelegate;
     this.jmsDelegate.sslEnabled = sslEnabled;
     this.sslConfig = new HashMap<>();
-
-    SSL_TRUST_STORE_TYPE = getString( PKG, "JmsDialog.Security.SSL_TRUST_STORE_TYPE" );
-    SSL_TRUST_STORE_PATH = getString( PKG, "JmsDialog.Security.SSL_TRUST_STORE_PATH" );
-    SSL_TRUST_STORE_PASSWORD = getString( PKG, "JmsDialog.Security.SSL_TRUST_STORE_PASSWORD" );
-    SSL_KEY_STORE_TYPE = getString( PKG, "JmsDialog.Security.SSL_KEY_STORE_TYPE" );
-    SSL_KEY_STORE_PATH = getString( PKG, "JmsDialog.Security.SSL_KEY_STORE_PATH" );
-    SSL_KEY_STORE_PASS = getString( PKG, "JmsDialog.Security.SSL_KEY_STORE_PASS" );
-    SSL_CONTEXT_ALGORITHM = getString( PKG, "JmsDialog.Security.SSL_CONTEXT_ALGORITHM" );
-    SSL_CIPHER_SUITE = getString( PKG, "JmsDialog.Security.SSL_CIPHER_SUITE" );
-    SSL_IBM_FIPS_REQUIRED = getString( PKG, "JmsDialog.Security.SSL_IBM_FIPS_REQUIRED" );
-    SSL_AMQ_PROVIDER = getString( PKG, "JmsDialog.Security.SSL_AMQ_PROVIDER" );
-    SSL_AMQ_TRUST_ALL = getString( PKG, "JmsDialog.Security.SSL_AMQ_TRUST_ALL" );
-    SSL_AMQ_VERIFY_HOST = getString( PKG, "JmsDialog.Security.SSL_AMQ_VERIFY_HOST" );
   }
 
-  protected void buildSecurityTab() {
+  void buildSecurityTab() {
     CTabItem wSecurityTab = new CTabItem( wTabFolder, SWT.NONE, 1 );
     wSecurityTab.setText( BaseMessages.getString( PKG, "JmsDialog.Security.Tab" ) );
 
@@ -130,7 +118,7 @@ class JmsDialogSecurityLayout {
       getString( PKG, "JmsDialog.JmsPassword" ) );
     activeMqAuthComposite.setLayoutData( fdAuthComposite );
 
-    wSslGroup = new Composite( wSecurityComp, SWT.NONE );
+    Composite wSslGroup = new Composite( wSecurityComp, SWT.NONE );
 
     FormLayout flSsl = new FormLayout();
     flSsl.marginHeight = 0;
@@ -153,14 +141,8 @@ class JmsDialogSecurityLayout {
       lsMod,
       transMeta,
       sslConfig,
-      BaseMessages.getString( PKG, "JmsDialog.Security.SSLButton" ),
-      BaseMessages.getString( PKG, "JmsDialog.Security.SSLTable" ),
-      BaseMessages.getString( PKG, "JmsDialog.Security.Column.Name" ),
-      BaseMessages.getString( PKG, "JmsDialog.Security.Column.Value" ),
-      jmsDelegate.sslEnabled,
-      jmsDelegate.sslUseDefaultContext,
       this::toggleVisibility,
-      jmsDelegate.connectionType );
+      jmsDelegate );
 
     FormData fdSecurityComp = new FormData();
     wSecurityComp.setLayoutData( fdSecurityComp );
@@ -174,8 +156,9 @@ class JmsDialogSecurityLayout {
     toggleVisibility( JmsProvider.ConnectionType.valueOf( this.jmsDelegate.connectionType ) );
   }
 
-  protected void saveTableValues() {
+  void saveTableValues() {
     Map<String, String> tableValues = checkBoxTableCombo.getPropertiesData();
+
     jmsDelegate.sslEnabled = checkBoxTableCombo.getIsEnabled();
     jmsDelegate.sslUseDefaultContext = checkBoxTableCombo.getUseDefaultSslContext();
 
@@ -190,6 +173,7 @@ class JmsDialogSecurityLayout {
       jmsDelegate.amqSslProvider = tableValues.get( SSL_AMQ_PROVIDER );
       jmsDelegate.amqSslTrustAll = tableValues.get( SSL_AMQ_TRUST_ALL );
       jmsDelegate.amqSslVerifyHost = tableValues.get( SSL_AMQ_VERIFY_HOST );
+      jmsDelegate.sslCipherSuite = tableValues.get( SSL_CIPHER_SUITE );
     } else {
       if ( checkBoxTableCombo.getSelectedConnectionType().equals( JmsProvider.ConnectionType.WEBSPHERE ) ) {
         jmsDelegate.sslCipherSuite = tableValues.get( SSL_CIPHER_SUITE );
@@ -199,14 +183,14 @@ class JmsDialogSecurityLayout {
 
   }
 
-  protected void saveAuthentication() {
+  void saveAuthentication() {
     jmsDelegate.amqUsername = activeMqAuthComposite.getUsername();
     jmsDelegate.amqPassword = activeMqAuthComposite.getPassword();
     jmsDelegate.ibmUsername = ibmMqAuthComposite.getUsername();
     jmsDelegate.ibmPassword = ibmMqAuthComposite.getPassword();
   }
 
-  protected void populateTableIbm() {
+  private void populateTableIbm() {
     this.sslConfig = new HashMap<>();
 
     if ( !checkBoxTableCombo.getUseDefaultSslContext() ) {
@@ -221,11 +205,10 @@ class JmsDialogSecurityLayout {
     this.sslConfig.put( SSL_CIPHER_SUITE, this.jmsDelegate.sslCipherSuite );
     this.sslConfig.put( SSL_IBM_FIPS_REQUIRED, this.jmsDelegate.ibmSslFipsRequired );
 
-
     this.checkBoxTableCombo.updateDataMap( this.sslConfig );
   }
 
-  protected void populateTableActiveMq() {
+  private void populateTableActiveMq() {
     this.sslConfig = new HashMap<>();
 
     if ( !checkBoxTableCombo.getUseDefaultSslContext() ) {
@@ -243,19 +226,22 @@ class JmsDialogSecurityLayout {
     this.checkBoxTableCombo.updateDataMap( this.sslConfig );
   }
 
-  protected void toggleVisibility( JmsProvider.ConnectionType type ) {
+  void toggleVisibility( JmsProvider.ConnectionType type ) {
     checkBoxTableCombo.setSelectedConnectionType( type );
-    switch ( type ) {
-      case WEBSPHERE:
-        activeMqAuthComposite.setVisible( false );
-        ibmMqAuthComposite.setVisible( true );
-        populateTableIbm();
-        break;
-      case ACTIVEMQ:
-        ibmMqAuthComposite.setVisible( false );
-        activeMqAuthComposite.setVisible( true );
-        populateTableActiveMq();
-        break;
+    if ( type == JmsProvider.ConnectionType.WEBSPHERE ) {
+      activeMqAuthComposite.setVisible( false );
+      ibmMqAuthComposite.setVisible( true );
+      populateTableIbm();
+    } else if ( type == JmsProvider.ConnectionType.ACTIVEMQ ) {
+      ibmMqAuthComposite.setVisible( false );
+      activeMqAuthComposite.setVisible( true );
+      populateTableActiveMq();
     }
+    checkBoxTableCombo.resetPropertyTableVisibility();
   }
+
+  void setConnectionForm( ConnectionForm connectionForm ) {
+    checkBoxTableCombo.setConnectionForm( connectionForm );
+  }
+
 }
